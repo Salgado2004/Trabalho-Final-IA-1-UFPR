@@ -6,12 +6,17 @@ Universidade Federal do Paraná - UFPR
 
 ---
 
-*DS\<numero da matéria\> - \<nome da matéria\>*
+*DS803 - Inteligência Artificial Aplicada I*
 
-Prof. \<nome do professor\>
+Prof. Roberto Tadeu Raittz
 
-# \<nome do projeto\>
-\<descrição do projeto\>
+# Classificação de Feijões bons e ruins com MLP
+
+## Descrição do projeto
+
+O projeto consiste em classificar feijões bons e ruins utilizando uma rede neural MLP (Multi-Layer Perceptron). O dataset utilizado contém imagens de feijões, e o objetivo é treinar um modelo que possa identificar se um feijão é bom ou ruim com base em suas características visuais.
 
 ## Alunos
+- Gabriel Troni [@Gabriel-Troni](https://github.com/Gabriel-Troni)
 - Leonardo Felipe Salgado [@Salgado2004](https://github.com/Salgado2004)
+- Raul Ferreira Bana [@RaulBana](https://github.com/RaulBana)
