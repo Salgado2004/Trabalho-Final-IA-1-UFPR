@@ -1,7 +1,6 @@
 import cv2
 import numpy as np
 from joblib import load
-from treinamento import apply_sobel
 
 IMAGES = [
     "./data/bom_1.jpg",
@@ -15,25 +14,41 @@ IMAGES = [
 ]
 
 def main():
-    print("Escolha uma imagem para testar:")
-    for i, image in enumerate(IMAGES):
-        print(f"{i + 1}: {image}")
-    choice = int(input("Digite o número da imagem: ")) - 1
-    if choice < 0 or choice >= len(IMAGES):
-        print("Escolha inválida.")
-        return  
-    selected_image = IMAGES[choice]
-    print(f"Processando imagem: {selected_image}")
-    data = prepare_data(selected_image)
+    while True:
+        print("Escolha uma imagem para testar:")
+        for i, image in enumerate(IMAGES):
+            print(f"{i + 1}: {image}")
+        print("0: Sair")
+        choice = int(input("Digite o número da imagem: ")) - 1
+        if choice >= len(IMAGES):
+            print("Escolha inválida.")
+            return  
+        if choice < 0:
+            print("Saindo...")
+            return
+        selected_image = IMAGES[choice]
+        print(f"Processando imagem: {selected_image}")
+        data = prepare_data(selected_image)
 
-    classified_data = classify_data(data)
-    print("Resultados da classificação:")
-    image = cv2.imread(selected_image)
-    for item in classified_data:
-        draw_class(image, item['contour'], item['class'])
-    resized = cv2.resize(image, (0, 0), fx=0.23, fy=0.23)
-    cv2.imshow("Classificacao", resized)
-    cv2.waitKey(0)
+        classified_data = classify_data(data)
+        print("Resultados da classificação:")
+        image = cv2.imread(selected_image)
+        for item in classified_data:
+            draw_class(image, item['contour'], item['class'])
+        resized = cv2.resize(image, (0, 0), fx=0.23, fy=0.23)
+        cv2.imshow("Classificacao", resized)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+        print("\033[H\033[J", end="")
+
+def apply_sobel(img):
+    img_gray = img
+    grad_x = cv2.Sobel(img_gray, cv2.CV_64F, 1, 0, ksize=3)
+    grad_y = cv2.Sobel(img_gray, cv2.CV_64F, 0, 1, ksize=3)
+    abs_grad_x = cv2.convertScaleAbs(grad_x)
+    abs_grad_y = cv2.convertScaleAbs(grad_y)
+    img_sobel = cv2.addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0)
+    return img_sobel
 
 def prepare_data(image_path):
     image = cv2.imread(image_path)
