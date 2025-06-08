@@ -1,35 +1,20 @@
 import cv2
+import os
 import numpy as np
 from joblib import load
 from utils import apply_sobel, IMAGES
 
 def main():
-    while True:
-        print("Escolha uma imagem para testar:")
-        for i, image in enumerate(IMAGES):
-            print(f"{i + 1}: {image}")
-        print("0: Sair")
-        choice = int(input("Digite o número da imagem: ")) - 1
-        if choice >= len(IMAGES):
-            print("Escolha inválida.")
-            return  
-        if choice < 0:
-            print("Saindo...")
-            return
-        selected_image = IMAGES[choice]
-        print(f"Processando imagem: {selected_image}")
-        data = prepare_data(selected_image)
-
+    for image_path in IMAGES:
+        print(f"Processando imagem: {image_path}")
+        data = prepare_data(image_path)
         classified_data = classify_data(data)
-        print("Resultados da classificação:")
-        image = cv2.imread(selected_image)
+        print("Salvando resultados da classificação")
+        image = cv2.imread(image_path)
         for item in classified_data:
             draw_class(image, item['contour'], item['class'])
         resized = cv2.resize(image, (0, 0), fx=0.23, fy=0.23)
-        cv2.imshow("Classificacao", resized)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-        print("\033[H\033[J", end="")
+        save_results(resized, image_path.removeprefix('./data/'))
 
 def prepare_data(image_path):
     image = cv2.imread(image_path)
@@ -75,5 +60,12 @@ def classify_data(data):
 def draw_class(image, contour, classe):
     color = (0, 255, 0) if classe == 1 else (0, 0, 255)
     cv2.drawContours(image, [contour], -1, color, 3)
+
+def save_results(data, image_path):
+    if not os.path.exists('./snapshots'):
+        os.makedirs('./snapshots')
+    base_name = os.path.basename(image_path)
+    output_path = os.path.join('./snapshots', base_name)
+    cv2.imwrite(output_path, data)
 
 main()

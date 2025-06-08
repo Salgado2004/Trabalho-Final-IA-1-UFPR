@@ -16,6 +16,10 @@ Prof. Roberto Tadeu Raittz
 
 O projeto consiste em classificar feijões bons e ruins utilizando uma rede neural MLP (Multi-Layer Perceptron). O dataset utilizado contém imagens de feijões, e o objetivo é treinar um modelo que possa identificar se um feijão é bom ou ruim com base em suas características visuais.
 
+## Resultados
+
+Os resultados obtidos dos testes estão salvos na pasta `snapshots/`, onde as imagens dos feijões estão contornadas com as classificações obtidas pelo modelo. Os feijões considerados "bons" são marcados com um contorno verde, enquanto os "ruins" são marcados com um contorno vermelho.
+
 ## Como executar o projeto
 1. Certifique-se de ter o Python 3.x instalado em seu sistema.
 2. Instale as dependências necessárias:

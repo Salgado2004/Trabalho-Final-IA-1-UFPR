@@ -5,7 +5,18 @@ import numpy as np
 from sklearn import metrics
 from sklearn.neural_network import MLPClassifier
 from joblib import dump
-from utils import apply_sobel, IMAGES
+from utils import apply_sobel
+
+IMAGES = [
+    {"path": "./data/bom_1.jpg", "classe": 1},
+    {"path": "./data/bom_2.jpg", "classe": 1},
+    {"path": "./data/bom_3.jpg", "classe": 1},
+    {"path": "./data/bom_4.jpg", "classe": 1},
+    {"path": "./data/ruim_1.jpg", "classe": 0},
+    {"path": "./data/ruim_2.jpg", "classe": 0},
+    {"path": "./data/ruim_3.jpg", "classe": 0},
+    {"path": "./data/ruim_4.jpg", "classe": 0}
+]
 
 # Classe 1 - Bom, 0 - Ruim
 def main():
