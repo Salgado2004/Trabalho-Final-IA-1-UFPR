@@ -144,9 +144,9 @@ def buildMLPerceptron(treinamento, teste, treinamento_classes, teste_classes):
     if os.path.exists('./out/classifier.joblib'):
         os.remove('./out/classifier.joblib')
     classificador = MLPClassifier(
-        hidden_layer_sizes=250, max_iter=1000,
+        hidden_layer_sizes=350, max_iter=850,
         activation='relu', 
-        solver='adam', 
+        solver='sgd', 
         verbose=1, 
         random_state=None, 
         learning_rate='adaptive')
