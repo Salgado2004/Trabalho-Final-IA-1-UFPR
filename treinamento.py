@@ -5,7 +5,7 @@ import numpy as np
 from sklearn import metrics
 from sklearn.neural_network import MLPClassifier
 from joblib import dump
-from utils import apply_sobel
+from utils import reveal_edges, prepare_image, extract_features
 
 IMAGES = [
     {"path": "./data/bom_1.jpg", "classe": 1},
@@ -20,12 +20,12 @@ IMAGES = [
 
 # Classe 1 - Bom, 0 - Ruim
 def main():
-    #cleanup()
-    if not os.path.exists("./out"):
-        for i, image in enumerate(IMAGES):
-            print(f"Processando imagem: {image['path']}")
-            preprocess_image(i, image['path'], image['classe'])
-        cv2.destroyAllWindows()
+    cleanup()
+    #if not os.path.exists("./out"):
+    for i, image in enumerate(IMAGES):
+        print(f"Processando imagem: {image['path']}")
+        preprocess_image(i, image['path'], image['classe'])
+    cv2.destroyAllWindows()
 
     if not os.path.exists("./bin"):
         print("Gerando arquivos .dat...")
@@ -58,13 +58,17 @@ def main():
     start = time.time()
     buildMLPerceptron(treinamento, teste, treinamento_classes, teste_classes)
     end = time.time()
-    print(f"Tempo de execução {end - start:.2f} segundos")    
+    print(f"Tempo de execução {end - start:.2f} segundos")
 
 def cleanup():
     if os.path.exists("./out"):
         for file in os.listdir("./out"):
             os.remove(os.path.join("./out", file))
         os.rmdir("./out")
+    if os.path.exists("./bin"):
+        for file in os.listdir("./bin"):
+            os.remove(os.path.join("./bin", file))
+        os.rmdir("./bin")
     
     os.makedirs("./out")
 
@@ -80,18 +84,20 @@ def preprocess_image(id, image_path, classe):
     enhanced = clahe.apply(gray)
 
     blurred = cv2.GaussianBlur(enhanced, (11, 11), 0)
-    sobel = apply_sobel(blurred)
-    edges = cv2.threshold(sobel, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+    edges = reveal_edges(blurred)
 
     contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    
+
     for i, contour in enumerate(contours):
-        if  cv2.contourArea(contour) > 1000:
+        if cv2.contourArea(contour) > 650:
             x, y, w, h = cv2.boundingRect(contour)
             if 1 <= w / h <= 4:
-                cropped = enhanced[y:y+h, x:x+w]
+                bean_cropped = enhanced[y:y+h, x:x+w]
+
+                bean_no_bg = prepare_image(bean_cropped)
+
                 output_path = f"./out/{classe}-bean-{id*i}.jpg"
-                cv2.imwrite(output_path, cropped)
+                cv2.imwrite(output_path, bean_no_bg)
 
 def generate_dat_files():
     os.makedirs("./bin")
@@ -120,7 +126,12 @@ def write_file(images, filepath):
         img = cv2.cvtColor(img_data['image'], cv2.COLOR_BGR2GRAY)
         classe = img_data['classe']
         
-        feats = extract_features(img)
+        (mediana, 
+         desvioPadrao, 
+         entropia,
+         razao_largura_altura,
+         circularidade) = extract_features(img)
+        feats = f"  {mediana:.10e}   {desvioPadrao:.10e}   {entropia:.10e}   {razao_largura_altura:.10e}   {circularidade:.10e}"
 
         features.append(feats)
         labels.append(classe)
@@ -128,15 +139,6 @@ def write_file(images, filepath):
     with open(filepath, 'wb') as f:
         for feature, label in zip(features, labels):
             f.write(f"{feature}   {label}\n".encode('utf-8'))
-
-def extract_features(image):
-    hist = cv2.calcHist([image], [0], None, [256], [0, 256]).flatten()
-    total_pixels = np.sum(hist)
-    media = np.sum(hist * np.arange(256)) / total_pixels
-    desvioPadrao = np.sqrt(np.sum(hist * (np.arange(256) - media) ** 2) / total_pixels)
-    cumsum = np.cumsum(hist)
-    mediana = np.searchsorted(cumsum, total_pixels // 2)
-    return f"  {mediana:4d}   {desvioPadrao:.10e}"
 
 def buildMLPerceptron(treinamento, teste, treinamento_classes, teste_classes):
     if os.path.exists('./out/classifier.joblib'):

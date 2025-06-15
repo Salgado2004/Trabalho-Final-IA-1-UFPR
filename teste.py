@@ -2,7 +2,7 @@ import cv2
 import os
 import numpy as np
 from joblib import load
-from utils import apply_sobel, IMAGES
+from utils import apply_sobel, prepare_image, extract_features, IMAGES
 
 def main():
     for image_path in IMAGES:
@@ -13,8 +13,7 @@ def main():
         image = cv2.imread(image_path)
         for item in classified_data:
             draw_class(image, item['contour'], item['class'])
-        resized = cv2.resize(image, (0, 0), fx=0.23, fy=0.23)
-        save_results(resized, image_path.removeprefix('./data/'))
+        save_results(image, image_path.removeprefix('./data/'))
 
 def prepare_data(image_path):
     image = cv2.imread(image_path)
@@ -35,18 +34,15 @@ def prepare_data(image_path):
     
     data = []
     for c in contours:
-        if  cv2.contourArea(c) > 1000:
+        if  cv2.contourArea(c) > 750:
             x, y, w, h = cv2.boundingRect(c)
             if 1 <= w / h <= 4:
+                bean_cropped = enhanced[y:y+h, x:x+w]
+
+                bean_no_bg = prepare_image(bean_cropped)
+
                 contour = {"contour": c}
-                cropped = enhanced[y:y+h, x:x+w]
-                hist = cv2.calcHist([cropped], [0], None, [256], [0, 256]).flatten()
-                total_pixels = np.sum(hist)
-                media = np.sum(hist * np.arange(256)) / total_pixels
-                desvioPadrao = np.sqrt(np.sum(hist * (np.arange(256) - media) ** 2) / total_pixels)
-                cumsum = np.cumsum(hist)
-                mediana = np.searchsorted(cumsum, total_pixels // 2)
-                contour["features"] = [mediana, desvioPadrao]
+                contour["features"] = list(extract_features(bean_no_bg))
                 data.append(contour)
     return data
                 
